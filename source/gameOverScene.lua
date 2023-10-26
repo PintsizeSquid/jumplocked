@@ -1,6 +1,3 @@
--- Scripts
--- import "gameTitleScene"
-
 -- Performance Savers
 local pd <const> = playdate
 local gfx <const> = pd.graphics
@@ -8,6 +5,7 @@ local gfx <const> = pd.graphics
 -- Create GameOverScene sprite subclass 
 class('GameOverScene').extends(gfx.sprite)
 
+-- Initialize with the previous scene's score
 function GameOverScene:init(scoreText)
     -- Game Over text + the passed in score
     local text = "GAME OVER\n\n" .. scoreText
@@ -20,7 +18,7 @@ function GameOverScene:init(scoreText)
     local gameOverImage = gfx.image.new(gfx.getTextSize(text))
     -- Push the image context
     gfx.pushContext(gameOverImage)
-        -- Apply drawing functions to the image
+        -- Draw the text center of the image
         gfx.drawText(text, 0, 0)
     -- Pop the image context and restore its state
     gfx.popContext()
@@ -40,7 +38,7 @@ end
 
 -- Override update function
 function GameOverScene:update()
-    -- FOR NOW If button is pressed...
+    -- If B button is pressed...                    (MAKE THIS ANY BUTTON / FINALIZE THIS SCENE AND IT'S VISUALS)
     if pd.buttonJustPressed(pd.kButtonB) then
         -- ...Switch back to the title scene
         SCENE_MANAGER:switchScene(GameTitleScene)

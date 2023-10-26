@@ -2,7 +2,7 @@
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
--- Create Player sprite subclass 
+-- Create Player sprite subclass
 class('Player').extends(gfx.sprite)
 
 -- Player states
@@ -16,20 +16,21 @@ local playerState = PLAYER_STATES.falling
 
 -- Initialize with coordinates
 function Player:init(x, y)
-    -- Create an image of the player
+    -- Load an image of the player                              (FOR NOW IN PLACE OF AN IDLE/FALLING ANIMATION)
     self.playerImage = gfx.image.new("images/player")
 
-    -- Fire animation sprite sheet
+    -- Load the fire animation sprite sheet
     local fireImageTable = gfx.imagetable.new("images/fire-table-16-16")
-    -- Create new animation loop with the title screen sprite sheet
+    -- Create new animation loop with the fire image table
     self.fireAnimation = gfx.animation.loop.new(100, fireImageTable, false)
+    -- Pause the animation so it doesn't play until needed
     self.fireAnimation.paused = true
 
     -- Set the sprite
     self:setImage(self.playerImage)
-    -- Move the sprite to it's assigned location
+    -- Move the sprite to it's spawn location
     self:moveTo(x, y)
-    -- Set this sprites collision box
+    -- Set this sprites collision box                           (THESE VALUES MAY NEED CHANGING FOR COLLISION BOX)
     self:setCollideRect(6, 4, 6, 13)
     -- Grab the current angle of the crank and convert it to radians
     local crankAngle = math.rad( pd.getCrankPosition() )
@@ -37,10 +38,12 @@ function Player:init(x, y)
     self:setRotation(self:getRotation() + pd.getCrankPosition())
 
     -- Physics Properties
-    self.xVelocity = 0.0
-    self.yVelocity = 0.0
     self.gravity = .98
     self.airResistance = 0.2
+
+    -- Player values
+    self.xVelocity = 0.0
+    self.yVelocity = 0.0
     self.jumpForce = -10.0
     self.fireForce = 15.0
     self.maxSpeed = 20.0
@@ -52,6 +55,7 @@ function Player:init(x, y)
     self:add()
 end
 
+-- FOR NOW Set the player's collision type to slide off of other colliders
 function Player:collisionResponse()
     return gfx.sprite.kCollisionTypeSlide
 end
@@ -62,18 +66,21 @@ function Player:update()
 
     self:handleState()
 
+    -- Not sure why but math.clamp wasn't working so this is here in the meantime to cap speed
     if self.xVelocity > self.maxSpeed then self.xVelocity = self.maxSpeed
     elseif self.xVelocity < -self.maxSpeed then self.xVelocity = -self.maxSpeed
     end
 
     self:handleMovementAndCollisions()
 
+    -- If player falls below the waterline...
     if self.y > 400 then
+        -- ...Touching water is true                            (PLAY DEATH ANIMATION HERE (TERMINATOR THUMBS UP))
         self.touchingWater = true
-        self.yVelocity = 0
     end
 end
 
+-- Helper function to rotate/animate the player                 (STILL NEED IDLE/FALLING/FLYING ANIMATIONS)
 function Player:updateAnimation()
     -- Grab the current angle of the crank and convert it to radians
     local crankAngle = math.rad( pd.getCrankPosition() )
@@ -81,21 +88,36 @@ function Player:updateAnimation()
     self:setRotation(self:getRotation() + pd.getCrankChange())
 end
 
+-- Helper function to deal with player states
 function Player:handleState()
+    -- If player is falling...
     if playerState == PLAYER_STATES.falling then
+        -- ... Set image to idle/falling animation
         self:setImage(self.playerImage)
+        -- Apply gravity
         self:applyGravity()
+        -- Handle our inputs
         self:handleInput()
+    -- If player wants to fire...
     elseif playerState == PLAYER_STATES.firing then
+        -- ... Set image to firing animation
         self:setImage(self.fireAnimation:image())
+        -- Apply gravity
         self:applyGravity()
+        -- FIRE!!!
         self:handleFireInput()
+    -- If player wants to jump...
     elseif playerState == PLAYER_STATES.jumping then
+        -- ... JUMP!!! (No gravity as this is more of a saving move)
         self:handleJumpInput()
+
+        -- ADD CURSE LOGIC TO INCREASE DIFFICULTY ONCE YOU WORK OUT HOW THAT WILL WORK
     end
 end
 
+-- Movement Function (There isn't anything to collide with, nor is there ground so I don't think I need this)
 function Player:handleMovementAndCollisions()
+    -- Technically all I need is this part \/ (moveWithCollisions())
     local _, _, collisions, length = self:moveWithCollisions(self.x + self.xVelocity, self.y + self.yVelocity)
 
     self.touchingWater = false
@@ -107,59 +129,93 @@ function Player:handleMovementAndCollisions()
     end
 end
 
+-- Handle Player Input
 function Player:handleInput()
+    -- If B is pressed, and we aren't firing / are off cooldown...
     if pd.buttonJustPressed(pd.kButtonB) and playerState ~= PLAYER_STATES.firing and self.fired == false then
+        -- ...Start firing
         playerState = PLAYER_STATES.firing
+        -- Play the firing animation
         self.fireAnimation.paused = false
+    -- If A is pressed...
     elseif pd.buttonJustPressed(pd.kButtonA) then
+        -- ...Start jumping
         playerState = PLAYER_STATES.jumping
     end
 end
 
+-- Handle firing input
 function Player:handleFireInput()
-    -- Grab the current angle of the crank and convert it to radians 
-    -- (- 90 because 0 on the crank is straight up (90 on unit circle))
+    -- If the player is on the right frame to fire, and hasn't fired yet...
     if self.fireAnimation.frame == 4 and self.fired == false then
+
+        -- ...Grab the current angle of the crank and convert it to radians 
+        -- (- 90 because 0 on the crank is straight up (90 on unit circle))
         local crankAngle = math.rad( pd.getCrankPosition() - 90)
 
+        -- Calculate our horizontal and vertical forces using the crank angle
         local xFire = math.cos(crankAngle) * self.fireForce
         local yFire = math.sin(crankAngle) * self.fireForce
 
+        -- Add the x force to the current xVelocity
         self.xVelocity += xFire
+        -- Set our yVelocity to the y force (Feels bad with gravity involved)
         self.yVelocity = yFire
 
+        -- Player has fired
         self.fired = true
     end
 
+    -- If the player has fired...
     if self.fireAnimation.frame >= 5 and self.fired == true then
+        -- ... The player is now falling
         playerState = PLAYER_STATES.falling
+        -- Set the fire animation back to frame one
         self.fireAnimation.frame = 1
+        -- Reset the player image
         self:setImage(self.fireAnimation:image())
+        -- Pause the fire animation until next time
         self.fireAnimation.paused = true
+        -- Player hasn't fired
         self.fired = false
     end
 end
 
+-- Handle jumping input
 function Player:handleJumpInput()
-    self.yVelocity = self.jumpForce
+    -- WILL NEED TO ACCOUNT FOR A JUMP ANIMATION ONCE I'VE DRAWN ONE, SHOULD LOOK LIKE ABOVE FUNCTION
 
+    -- Set our yVelocity to the jump force
+    self.yVelocity = self.jumpForce
+    -- Player is now falling
     playerState = PLAYER_STATES.falling
 end
 
--- Physics Helper Functions
+-- Gravity Physics Helper Function
 function Player:applyGravity()
+    -- If the player is moving right...
     if self.xVelocity > 0 then 
+        -- ...Slow down the xVelocity by airResistance
         self.xVelocity -= self.airResistance
+        -- If the player is now moving left...
         if self.xVelocity < 0 then self.xVelocity = 0
+        -- ...They should have just stopped
         end
+    -- If the player is moving left...
     elseif self.xVelocity < 0 then 
+        -- ...Slow down the xVelocity by airResistance
         self.xVelocity += self.airResistance
+        -- If the player is now moving right...
         if self.xVelocity > 0 then self.xVelocity = 0
+        -- ...They should have just stopped
         end
     end
 
+    -- Apply gravity to yVelocity
     self.yVelocity += self.gravity
+    -- If the player has hit water...
     if self.touchingWater then
+        -- ...They should have stopped
         self.yVelocity = 0
     end
 end

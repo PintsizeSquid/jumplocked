@@ -1,6 +1,3 @@
--- Scripts
-import "gameScene"
-
 -- Performance Savers
 local pd <const> = playdate
 local gfx <const> = pd.graphics
