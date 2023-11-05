@@ -37,8 +37,13 @@ function Player:init(x, y)
     -- Adjust the rotation of the sprite to match the current crank angle
     self:setRotation(self:getRotation() + pd.getCrankPosition())
 
+    -- Camera properties
+    self.cameraEase = 0.1
+
     -- Physics Properties
-    self.gravity = .98
+    -- Gravity is 9.8 (just like real life!)
+    -- dividing by 30 here so it's per second (30 frames per second)
+    self.gravity = 9.8/30
     self.airResistance = 0.2
 
     -- Player values
@@ -72,6 +77,7 @@ function Player:update()
     end
 
     self:handleMovementAndCollisions()
+    self:handleCameraMovement()
 
     -- If player falls below the waterline...
     if self.y > 400 then
@@ -127,6 +133,21 @@ function Player:handleMovementAndCollisions()
             self.touchingWater = true
         end
     end
+end
+
+-- Camera movement Function
+function Player:handleCameraMovement()
+    -- Grab current camera position (x,y)
+    local camX, camY = gfx.getDrawOffset()
+    -- Grab current player position (x,y)
+    local playerX = -math.floor(self.x) + 50
+    local playerY = -math.floor(self.y)
+    -- New camera position adds the difference between it and the player,
+    -- applying a some easing to make it look like the player is
+    -- in fact flying forward before recentering.
+    local x = camX - math.abs(playerX - camX)*self.cameraEase
+    local y = camY - math.abs(playerY - camY)*self.cameraEase
+    gfx.setDrawOffset(x, 0)
 end
 
 -- Handle Player Input
@@ -209,6 +230,16 @@ function Player:applyGravity()
         if self.xVelocity > 0 then self.xVelocity = 0
         -- ...They should have just stopped
         end
+    end
+
+    -- If the player is moving up...
+    if self.yVelocity < 0 then
+        -- ...Slow down the yVelocity by airResistance
+        self.yVelocity += self.airResistance
+    -- If the player is moving down...
+    elseif self.yVelocity > 0 then
+        -- ...Slow down the yVelocity by airResistance
+        self.yVelocity -= self.airResistance
     end
 
     -- Apply gravity to yVelocity
