@@ -52,12 +52,17 @@ function Player:init(x, y)
     self.jumpForce = -10.0
     self.fireForce = 15.0
     self.maxSpeed = 20.0
+    self.charges = 5
 
     -- Current Action
     self.fired = false
 
     -- Add this sprite to the display list
     self:add()
+
+    -- Create the HUD overlays (After the player so the HUD is drawn on top)
+    self.chargeHUD = ChargeHUD()
+    self.difficultyHUD = DifficultyHUD()
 end
 
 -- FOR NOW Set the player's collision type to slide off of other colliders
@@ -145,15 +150,15 @@ function Player:handleCameraMovement()
     -- New camera position adds the difference between it and the player,
     -- applying a some easing to make it look like the player is
     -- in fact flying forward before recentering.
-    local x = camX - math.abs(playerX - camX)*self.cameraEase
-    local y = camY - math.abs(playerY - camY)*self.cameraEase
+    local x = camX + (playerX - camX)*self.cameraEase
+    local y = camY + (playerY - camY)*self.cameraEase
     gfx.setDrawOffset(x, 0)
 end
 
 -- Handle Player Input
 function Player:handleInput()
     -- If B is pressed, and we aren't firing / are off cooldown...
-    if pd.buttonJustPressed(pd.kButtonB) and playerState ~= PLAYER_STATES.firing and self.fired == false then
+    if pd.buttonJustPressed(pd.kButtonB) and playerState ~= PLAYER_STATES.firing and self.fired == false and self.charges > 0 then
         -- ...Start firing
         playerState = PLAYER_STATES.firing
         -- Play the firing animation
@@ -185,6 +190,12 @@ function Player:handleFireInput()
 
         -- Player has fired
         self.fired = true
+
+        -- Decrease our charges
+        self.chargeHUD:chargeFired()
+        if self.charges > 0 then
+            self.charges -= 1
+        end
     end
 
     -- If the player has fired...
@@ -210,6 +221,9 @@ function Player:handleJumpInput()
     self.yVelocity = self.jumpForce
     -- Player is now falling
     playerState = PLAYER_STATES.falling
+
+    -- Increase difficulty (MAKE A VALUE FOR THIS LATER WHEN ENEMIES/SPAWNERS EXIST (For now just update HUD scale))
+    self.difficultyHUD:playerJumped()
 end
 
 -- Gravity Physics Helper Function

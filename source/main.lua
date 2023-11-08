@@ -6,11 +6,13 @@ import "CoreLibs/animation"
 import "CoreLibs/timer"
 
 -- Scripts
-import "sceneManager"
-import "gameTitleScene"
-import "gameScene"
-import "gameOverScene"
-import "player"
+import "scenes/sceneManager"
+import "scenes/gameTitleScene"
+import "scenes/gameScene"
+import "scenes/gameOverScene"
+import "objects/player"
+import "hud/chargeHUD"
+import "hud/difficultyHUD"
 
 -- Performance Savers
 local pd <const> = playdate
