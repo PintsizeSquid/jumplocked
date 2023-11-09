@@ -49,8 +49,8 @@ function Player:init(x, y)
     -- Player values
     self.xVelocity = 0.0
     self.yVelocity = 0.0
-    self.jumpForce = -10.0
-    self.fireForce = 15.0
+    self.jumpForce = -5.0
+    self.fireForce = 10.0
     self.maxSpeed = 20.0
     self.charges = 5
 
@@ -59,6 +59,9 @@ function Player:init(x, y)
 
     -- Add this sprite to the display list
     self:add()
+
+    -- Create the water sprite
+    self.water = Water()
 
     -- Create the HUD overlays (After the player so the HUD is drawn on top)
     self.chargeHUD = ChargeHUD()
@@ -83,9 +86,10 @@ function Player:update()
 
     self:handleMovementAndCollisions()
     self:handleCameraMovement()
+    self:handleWaterMovement()
 
     -- If player falls below the waterline...
-    if self.y > 400 then
+    if self.y > 300 then
         -- ...Touching water is true                            (PLAY DEATH ANIMATION HERE (TERMINATOR THUMBS UP))
         self.touchingWater = true
     end
@@ -152,7 +156,13 @@ function Player:handleCameraMovement()
     -- in fact flying forward before recentering.
     local x = camX + (playerX - camX)*self.cameraEase
     local y = camY + (playerY - camY)*self.cameraEase
-    gfx.setDrawOffset(x, 0)
+    if y < -120 then y = camY elseif y > 240 then y = camY end
+    gfx.setDrawOffset(x, y)
+end
+
+-- Water movement Function
+function Player:handleWaterMovement()
+    self.water:followPlayer(self.x)
 end
 
 -- Handle Player Input

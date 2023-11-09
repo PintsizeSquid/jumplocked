@@ -8,7 +8,7 @@ class('GameScene').extends(gfx.sprite)
 -- Initialize
 function GameScene:init()
     -- Create the player object
-    self.player = Player(50, 0)
+    self.player = Player(50, 120)
 
     -- Add this scene (sprite) to the display list
     self:add()

@@ -11,6 +11,7 @@ import "scenes/gameTitleScene"
 import "scenes/gameScene"
 import "scenes/gameOverScene"
 import "objects/player"
+import "objects/water"
 import "hud/chargeHUD"
 import "hud/difficultyHUD"
 
