@@ -11,13 +11,13 @@ function DifficultyHUD:init()
     self:setIgnoresDrawOffset(true)
 
     -- Charge HUD sprite sheet
-    local difficultyImageTable = gfx.imagetable.new("images/HUD-difficulty-table-16-120")
+    local difficultyImageTable = gfx.imagetable.new("images/HUD-difficulty-table-32-120")
     -- Create new animation loop with the charge hud sprite sheet
     self.difficultyHUDAnimation = gfx.animation.loop.new(100, difficultyImageTable, false)
     -- Make sure the start animation doesn't play yet
     self.difficultyHUDAnimation.paused = true
     -- Center the sprite to the screen
-    self:moveTo(8, 180)
+    self:moveTo(0, 180)
 
     -- Add this scene (sprite) to the display list
     self:add()

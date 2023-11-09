@@ -11,13 +11,13 @@ function ChargeHUD:init()
     self:setIgnoresDrawOffset(true)
 
     -- Charge HUD sprite sheet
-    local chargeImageTable = gfx.imagetable.new("images/HUD-charges-table-16-120")
+    local chargeImageTable = gfx.imagetable.new("images/HUD-charges-table-32-120")
     -- Create new animation loop with the charge hud sprite sheet
     self.chargeHUDAnimation = gfx.animation.loop.new(100, chargeImageTable, false)
     -- Make sure the start animation doesn't play yet
     self.chargeHUDAnimation.paused = true
     -- Center the sprite to the screen
-    self:moveTo(8, 60)
+    self:moveTo(0, 60)
 
     -- Add this scene (sprite) to the display list
     self:add()
