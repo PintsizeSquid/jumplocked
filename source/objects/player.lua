@@ -49,9 +49,9 @@ function Player:init(x, y)
     -- Player values
     self.xVelocity = 0.0
     self.yVelocity = 0.0
-    self.jumpForce = -5.0
-    self.fireForce = 10.0
-    self.maxSpeed = 20.0
+    self.jumpForce = -10.0
+    self.fireForce = 15.0
+    self.maxSpeed = 30.0
     self.charges = 5
 
     -- Current Action
@@ -62,6 +62,8 @@ function Player:init(x, y)
 
     -- Create the water sprite
     self.water = Water()
+    -- Create the clouds sprite
+    self.cloud = Cloud()
 
     -- Create the HUD overlays (After the player so the HUD is drawn on top)
     self.chargeHUD = ChargeHUD()
@@ -86,7 +88,7 @@ function Player:update()
 
     self:handleMovementAndCollisions()
     self:handleCameraMovement()
-    self:handleWaterMovement()
+    self:handleEnvironmentMovement()
 
     -- If player falls below the waterline...
     if self.y > 300 then
@@ -156,13 +158,14 @@ function Player:handleCameraMovement()
     -- in fact flying forward before recentering.
     local x = camX + (playerX - camX)*self.cameraEase
     local y = camY + (playerY - camY)*self.cameraEase
-    if y < -120 then y = camY elseif y > 240 then y = camY end
+    if y < -60 then y = camY elseif y > 240 then y = camY end
     gfx.setDrawOffset(x, y)
 end
 
--- Water movement Function
-function Player:handleWaterMovement()
+-- Environment movement Function
+function Player:handleEnvironmentMovement()
     self.water:followPlayer(self.x)
+    self.cloud:followPlayer(self.x)
 end
 
 -- Handle Player Input
