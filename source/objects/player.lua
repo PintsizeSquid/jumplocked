@@ -57,13 +57,16 @@ function Player:init(x, y)
     -- Current Action
     self.fired = false
 
+    -- Create the clouds sprite (This one under the player for layering)
+    self.cloudOne = Cloud(-360)
+
     -- Add this sprite to the display list
     self:add()
 
     -- Create the water sprite
     self.water = Water()
-    -- Create the clouds sprite
-    self.cloud = Cloud()
+    -- Create another clouds sprite (This one over the player for layering)
+    self.cloudTwo = Cloud(-400)
 
     -- Create the HUD overlays (After the player so the HUD is drawn on top)
     self.chargeHUD = ChargeHUD()
@@ -152,20 +155,21 @@ function Player:handleCameraMovement()
     local camX, camY = gfx.getDrawOffset()
     -- Grab current player position (x,y)
     local playerX = -math.floor(self.x) + 50
-    local playerY = -math.floor(self.y)
+    local playerY = -math.floor(self.y) + 120
     -- New camera position adds the difference between it and the player,
     -- applying a some easing to make it look like the player is
     -- in fact flying forward before recentering.
     local x = camX + (playerX - camX)*self.cameraEase
     local y = camY + (playerY - camY)*self.cameraEase
-    if y < -60 then y = camY elseif y > 240 then y = camY end
+    if y < -60 then y = camY elseif y > 360 then y = camY end
     gfx.setDrawOffset(x, y)
 end
 
 -- Environment movement Function
 function Player:handleEnvironmentMovement()
     self.water:followPlayer(self.x)
-    self.cloud:followPlayer(self.x)
+    self.cloudOne:followPlayer(self.x)
+    self.cloudTwo:followPlayer(self.x)
 end
 
 -- Handle Player Input

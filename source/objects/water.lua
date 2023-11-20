@@ -24,14 +24,8 @@ function Water:init()
 
     -- Create a sprite with the now pushed text image
     self:setImage(waterImage)
-    -- Scale up the sprite size
-    --  waterSprite:setScale(1)
     -- Move the sprite to the center of the screen
     self:moveTo(200, 360)
-
-
-    -- -- Center the sprite to the screen
-    -- self:moveTo(0, 60)
 
     -- Add this scene (sprite) to the display list
     self:add()

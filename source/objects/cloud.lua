@@ -6,30 +6,26 @@ local gfx <const> = pd.graphics
 class('Cloud').extends(gfx.sprite)
 
 -- Initialize
-function Cloud:init()
-    local cloudImage = gfx.image.new(800, 240)
+function Cloud:init(y)
+    local cloudImage = gfx.image.new("images/clouds")
     -- Push the image context
     gfx.pushContext(cloudImage)
         -- Draw the text center of the image
-        gfx.fillRect(0, 0, 800, 240)
+        cloudImage:draw(0, 0)
     -- Pop the image context and restore its state
     gfx.popContext()
 
     -- Create a sprite with the now pushed text image
     self:setImage(cloudImage)
-    -- Scale up the sprite size
-    --  waterSprite:setScale(1)
     -- Move the sprite to the center of the screen
-    self:moveTo(200, 360)
+    self:moveTo(200, y)
 
-
-    -- -- Center the sprite to the screen
-    -- self:moveTo(0, 60)
+    self.yPos = y
 
     -- Add this scene (sprite) to the display list
     self:add()
 end
 
 function Cloud:followPlayer(x)
-    self:moveTo(x, -180)
+    self:moveTo(x, self.yPos)
 end
