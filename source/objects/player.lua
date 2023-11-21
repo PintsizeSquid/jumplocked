@@ -139,6 +139,7 @@ function Player:handleState()
         self:handleJumpInput()
 
         -- ADD CURSE LOGIC TO INCREASE DIFFICULTY ONCE YOU WORK OUT HOW THAT WILL WORK
+        -- Probably more enemy spawns / Lightning strikes
     end
 end
 
