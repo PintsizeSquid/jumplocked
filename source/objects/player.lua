@@ -53,18 +53,24 @@ function Player:init(x, y)
     self.fireForce = 15.0
     self.maxSpeed = 30.0
     self.charges = 5
+    self.score = 0
 
     -- Current Action
     self.fired = false
 
     -- Create the clouds sprite (This one under the player for layering)
     self.cloudOne = Cloud(-360)
+    -- Create the water sprite (This one under the player for layering)
+    self.waterOne = Water(2, 50)
+
+    -- Make sure player is started in the right state
+    playerState = PLAYER_STATES.falling
 
     -- Add this sprite to the display list
     self:add()
 
-    -- Create the water sprite
-    self.water = Water()
+    -- Create another water sprite (This one over the player for layering)
+    self.waterTwo = Water(1, 0)
     -- Create another clouds sprite (This one over the player for layering)
     self.cloudTwo = Cloud(-400)
 
@@ -92,6 +98,7 @@ function Player:update()
     self:handleMovementAndCollisions()
     self:handleCameraMovement()
     self:handleEnvironmentMovement()
+    self:calculateScore()
 
     -- If player falls below the waterline...
     if self.y > 300 then
@@ -167,9 +174,13 @@ end
 
 -- Environment movement Function
 function Player:handleEnvironmentMovement()
-    self.water:followPlayer(self.x)
-    self.cloudOne:followPlayer(self.x)
+    self.cloudOne:followPlayer(self.x + 50) -- Little further ahead so both clouds don't look too identical
     self.cloudTwo:followPlayer(self.x)
+end
+
+-- Score Calculator
+function Player:calculateScore()
+    self.score = math.floor(self.x) + 50
 end
 
 -- Handle Player Input

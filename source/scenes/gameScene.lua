@@ -19,6 +19,8 @@ function GameScene:update()
     -- If the player touches the water...
     if self.player.touchingWater then
         -- ...Switch to the game over scene, passing the player's score
-        SCENE_MANAGER:switchScene(GameOverScene, "SCORE : 0")
+        local score = "SCORE : " .. tostring(self.player.score) .. " M"
+        print(score)
+        SCENE_MANAGER:switchScene(GameOverScene, score)
     end
 end

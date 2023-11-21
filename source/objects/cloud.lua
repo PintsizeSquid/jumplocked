@@ -2,7 +2,7 @@
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
--- Create GameScene sprite subclass 
+-- Create GameScene sprite subclass
 class('Cloud').extends(gfx.sprite)
 
 -- Initialize
