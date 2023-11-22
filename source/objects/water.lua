@@ -42,5 +42,4 @@ function Water:update()
     -- keeping the water moving beneath the player
     local moveX = -math.ceil(camX / 400) * 400 + 400
     self:moveTo(moveX - self.xOffset, 360)
-
 end

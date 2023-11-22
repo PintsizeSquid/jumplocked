@@ -15,6 +15,7 @@ import "objects/water"
 import "objects/cloud"
 import "hud/chargeHUD"
 import "hud/difficultyHUD"
+import "hud/rechargeHUD"
 
 -- Performance Savers
 local pd <const> = playdate

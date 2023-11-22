@@ -57,6 +57,8 @@ function Player:init(x, y)
 
     -- Current Action
     self.fired = false
+    self.firstShot = false
+    self.recharged = false
 
     -- Create the clouds sprite (This one under the player for layering)
     self.cloudOne = Cloud(-360)
@@ -76,6 +78,7 @@ function Player:init(x, y)
 
     -- Create the HUD overlays (After the player so the HUD is drawn on top)
     self.chargeHUD = ChargeHUD()
+    self.rechargeHUD = RechargeHUD()
     self.difficultyHUD = DifficultyHUD()
 end
 
@@ -98,6 +101,7 @@ function Player:update()
     self:handleMovementAndCollisions()
     self:handleCameraMovement()
     self:handleEnvironmentMovement()
+    self:checkRecharge()
     self:calculateScore()
 
     -- If player falls below the waterline...
@@ -139,7 +143,7 @@ function Player:handleState()
         self:handleJumpInput()
 
         -- ADD CURSE LOGIC TO INCREASE DIFFICULTY ONCE YOU WORK OUT HOW THAT WILL WORK
-        -- Probably more enemy spawns / Lightning strikes
+        -- Probably more enemy spawns / Lightning
     end
 end
 
@@ -184,6 +188,15 @@ function Player:calculateScore()
     self.score = math.floor(self.x) + 50
 end
 
+-- Check if the player has regained a fire charge
+function Player:checkRecharge()
+    if self.rechargeHUD.rechargeHUDAnimation.frame == self.rechargeHUD.rechargeHUDAnimation.endFrame then
+        self.chargeHUD:chargeGained()
+        self.rechargeHUD:resetRecharge()
+        self.charges += 1
+    end
+end
+
 -- Handle Player Input
 function Player:handleInput()
     -- If B is pressed, and we aren't firing / are off cooldown...
@@ -219,7 +232,10 @@ function Player:handleFireInput()
 
         -- Player has fired
         self.fired = true
-
+        if self.firstShot == false then
+            self.firstShot = true
+            self.rechargeHUD:unpauseRecharge()
+        end
         -- Shake the screen
         self:screenShake(250, 4)
 
