@@ -2,13 +2,14 @@
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
--- Create GameScene sprite subclass
+-- Extend Cloud sprite subclass
 class('Cloud').extends(gfx.sprite)
 
--- Initialize
-function Cloud:init(y)
+-- Initialize Cloud object
+function Cloud:init(y, zHeight)
+    -- Load the cloud image
     local cloudImage = gfx.image.new("images/clouds")
-    -- Push the image context
+    -- Push the cloud image context
     gfx.pushContext(cloudImage)
         -- Draw the text center of the image
         cloudImage:draw(0, 0)
@@ -17,15 +18,21 @@ function Cloud:init(y)
 
     -- Create a sprite with the now pushed text image
     self:setImage(cloudImage)
-    -- Move the sprite to the center of the screen
+    -- Move the sprite to the x center of the screen with it's given y position
     self:moveTo(200, y)
 
+    -- Record the y position for later
     self.yPos = y
 
-    -- Add this scene (sprite) to the display list
+    -- Add this sprite to the display list
     self:add()
+
+    -- Set Z-index high to display above other objects
+    self:setZIndex(zHeight)
 end
 
+-- Move function to follow player
 function Cloud:followPlayer(x)
+    -- Move to the given x position and remain locked in the y position
     self:moveTo(x, self.yPos)
 end

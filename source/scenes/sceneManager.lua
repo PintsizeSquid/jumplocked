@@ -25,17 +25,19 @@ end
 
 -- Function to cleanup the current scene
 function SceneManager:cleanupScene()
-    -- Wipe all sprites
+    -- Remove all sprites
     gfx.sprite.removeAll()
     -- Reset all timers
     self:removeAllTimers()
-    -- Recenter Draw
+    -- Recenter the draw offset
     gfx.setDrawOffset(0, 0)
 end
 
 -- Function to remove every timer
 function SceneManager:removeAllTimers()
+    -- Grab a list of all timers
     local allTimers = pd.timer.allTimers()
+    -- Remove each one
     for _, timer in ipairs(allTimers) do
         timer:remove()
     end

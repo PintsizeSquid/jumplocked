@@ -2,37 +2,45 @@
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
--- Create GameScene sprite subclass 
+-- Extend RechargeHUD sprite subclass 
 class('RechargeHUD').extends(gfx.sprite)
 
--- Initialize
-function RechargeHUD:init()
+-- Initialize RechargeHUD
+function RechargeHUD:init(player)
     -- Make sure our HUD is drawn in screen coordinates, and is unaffected by the drawOffset
     self:setIgnoresDrawOffset(true)
 
-    -- Recharge HUD sprite sheet
+    -- Load the RechargeHUD animation sprite sheet
     local rechargeImageTable = gfx.imagetable.new("images/HUD-recharge-table-5-120")
-    -- Create new animation loop with the recharge hud sprite sheet
-    self.rechargeHUDAnimation = gfx.animation.loop.new(750, rechargeImageTable, true)
-    -- Make sure the start animation doesn't play yet
+    -- Create new animation loop with the RechargeHUD sprite sheet
+    self.rechargeHUDAnimation = gfx.animation.loop.new(500, rechargeImageTable, true)
+    -- Make sure the animation doesn't play yet
     self.rechargeHUDAnimation.paused = true
-    -- Center the sprite to the screen
+    -- Move to 19, 60 (Just to the right of the ChargeHUD)
     self:moveTo(19, 60)
 
-    -- Add this scene (sprite) to the display list
+    -- Reference to player
+    self.playerObject = player
+
+    -- Add this sprite to the display list
     self:add()
+
+    -- Set Z-index high to display above other objects
+    self:setZIndex(100)
 end
 
 -- Override update function
 function RechargeHUD:update()
-    -- Set this sprite's image to the current title animation frame
+    -- Set this sprite's image to the current animation frame
     self:setImage(self.rechargeHUDAnimation:image())
 end
 
+-- Unpause animation function
 function RechargeHUD:unpauseRecharge()
     self.rechargeHUDAnimation.paused = false
 end
 
+-- Restart animation function
 function RechargeHUD:resetRecharge()
     self.rechargeHUDAnimation.frame = 1
 end
