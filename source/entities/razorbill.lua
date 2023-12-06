@@ -12,6 +12,14 @@ local RAZORBILL_STATES = {
     grabbed = 3
 }
 
+-- Player states
+local PLAYER_STATES = {
+    firing = 1,
+    jumping = 2,
+    gliding = 3,
+    falling = 4
+}
+
 -- Initialize Razorbill object with coordinates x and y
 function Razorbill:init(x, player)
     -- Set type
@@ -110,6 +118,14 @@ function Razorbill:handleMovementAndCollisions()
             collision.other.yVelocity = self.impactForce
             -- Play Hit sound
             pulp.audio.playSound("Hit")
+            -- If the player is currently gliding...
+            if collision.other.wasGliding then
+                -- ... The player is falling now
+                collision.other.wasGliding = false
+                collision.other.playerState = PLAYER_STATES.falling
+                -- Spawn a falling Albatross body
+                FireCharge(collision.other.x, collision.other.y, collision.other.xVelocity, 9.8, 0, collision.other, true)
+            end
         end
      end
 end

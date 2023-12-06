@@ -19,9 +19,11 @@ function GameScene:init()
     self.spawnGap = 1495
     self.spawnOffset = 300
     self.difficultyScale = 169
+    self.lastBuoyX = 0
 
     -- Current State
     self.gameOver = false
+    self.buoySpawned = false
 
     -- Add this scene (sprite) to the display list
     self:add()
@@ -51,6 +53,21 @@ function GameScene:update()
             -- Spawn Razorbill offscreen ahead of the player
             Razorbill(self.player.x + self.spawnOffset, self.player)
         end
+    end
+    -- Grab the current draw offset
+    local camX, _ = gfx.getDrawOffset()
+    -- If the camera is almost near a 10,000 mark and a buoy hasn't spawned...
+    if (-math.floor(camX) + 500) % 10000 <= 10 and self.buoySpawned == false then
+        -- ... Spawn a Buoy marker just ahead of the screen at the mark
+        Buoy(-math.floor(camX) + 500, 96)
+        self.lastBuoyX = -math.floor(camX) + 500
+        self.buoySpawned = true
+    end
+
+    -- If a buoy was spawned and the camera has gone past the last 10,000 mark...
+    if -camX > self.lastBuoyX and self.buoySpawned == true then
+        -- ... Another buoy can spawn when needed
+        self.buoySpawned = false
     end
 
     -- If the player is touching the water...

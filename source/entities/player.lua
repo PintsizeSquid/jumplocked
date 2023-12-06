@@ -12,8 +12,8 @@ local PLAYER_STATES = {
     gliding = 3,
     falling = 4
 }
--- Start the player off falling
-local playerState = PLAYER_STATES.falling
+-- -- Start the player off falling
+-- local playerState = PLAYER_STATES.falling
 
 -- Initialize Player object with coordinates x and y
 function Player:init(x, y)
@@ -43,8 +43,6 @@ function Player:init(x, y)
     local glideImageTable = gfx.imagetable.new("images/player-glide-table-32-32")
     -- Create new animation loop with the glide image table
     self.glideAnimation = gfx.animation.loop.new(100, glideImageTable, false)
-    -- Pause the animation so it doesn't play until needed
-    self.glideAnimation.paused = true
 
     -- Move the player to it's spawn location
     self:moveTo(x, y)
@@ -86,7 +84,7 @@ function Player:init(x, y)
 
     -- Make sure the player is started in the right state
     -- (Second time because it previously is only set the first time the player spawns)
-    playerState = PLAYER_STATES.falling
+    self.playerState = PLAYER_STATES.falling
 
     -- Add this sprite to the display list
     self:add()
@@ -150,7 +148,7 @@ end
 -- Helper function to deal with player states
 function Player:handleState()
     -- If player is falling...
-    if playerState == PLAYER_STATES.falling then
+    if self.playerState == PLAYER_STATES.falling then
         -- ... Set image to idle/falling animation
         self:setImage(self.fallingAnimation:image())
         -- Apply gravity
@@ -158,7 +156,7 @@ function Player:handleState()
         -- Handle our inputs
         self:handleInput()
     -- If player wants to fire...
-    elseif playerState == PLAYER_STATES.firing then
+    elseif self.playerState == PLAYER_STATES.firing then
         -- ... Set image to firing animation
         self:setImage(self.fireAnimation:image())
         -- Apply gravity
@@ -166,13 +164,13 @@ function Player:handleState()
         -- FIRE!!!
         self:handleFireInput()
     -- If player wants to jump...
-    elseif playerState == PLAYER_STATES.jumping then
+    elseif self.playerState == PLAYER_STATES.jumping then
         -- ... Set image to jumping animation
         self:setImage(self.jumpAnimation:image())
         -- JUMP!!! (No gravity as this is more of a saving move)
         self:handleJumpInput()
     -- If player grabbed an Albatross...
-    elseif playerState == PLAYER_STATES.gliding then
+    elseif self.playerState == PLAYER_STATES.gliding then
         -- ... Set image to gliding animation
         self:setImage(self.glideAnimation:image())
         -- Glide!!!
@@ -196,20 +194,20 @@ function Player:handleMovementAndCollisions()
     for i=1, length do
         local collision = collisions[i]
         -- If colliding with an Albatross...
-        if collision.other.enemyType == "Albatross" and playerState ~= PLAYER_STATES.gliding then
+        if collision.other.enemyType == "Albatross" and self.playerState ~= PLAYER_STATES.gliding then
             -- ... 'Grab' the Albatross
             collision.other:remove()
             -- Play Grab sound
             pulp.audio.playSound("Grab")
             -- Make sure to clean up fire/jump animations here before swapping states
-            if playerState == PLAYER_STATES.firing then
+            if self.playerState == PLAYER_STATES.firing then
                 -- Set the fire animation back to frame one
                 self.fireAnimation.frame = 1
                 -- Pause the fire animation until next time
                 self.fireAnimation.paused = true
                 -- Player hasn't fired
                 self.fired = false
-            elseif playerState == PLAYER_STATES.jumping then
+            elseif self.playerState == PLAYER_STATES.jumping then
                 -- Set the jump animation back to frame one
                 self.jumpAnimation.frame = 1
                 -- Pause the jump animation until next time
@@ -218,7 +216,7 @@ function Player:handleMovementAndCollisions()
                 self.jumped = false
             end
             -- Begin gliding
-            playerState = PLAYER_STATES.gliding
+            self.playerState = PLAYER_STATES.gliding
             self.wasGliding = true
         end
     end
@@ -266,16 +264,16 @@ end
 -- Handle Player Input
 function Player:handleInput()
     -- If B is pressed, and we aren't firing / are off cooldown...
-    if pd.buttonJustPressed(pd.kButtonB) and playerState ~= PLAYER_STATES.firing
+    if pd.buttonJustPressed(pd.kButtonB) and self.playerState ~= PLAYER_STATES.firing
         and self.fired == false and self.charges > 0 then
         -- ...Start firing
-        playerState = PLAYER_STATES.firing
+        self.playerState = PLAYER_STATES.firing
         -- Play the firing animation
         self.fireAnimation.paused = false
     -- If A is pressed...
-    elseif pd.buttonJustPressed(pd.kButtonA) and playerState ~= PLAYER_STATES.jumping then
+    elseif pd.buttonJustPressed(pd.kButtonA) and self.playerState ~= PLAYER_STATES.jumping then
         -- ...Start jumping
-        playerState = PLAYER_STATES.jumping
+        self.playerState = PLAYER_STATES.jumping
         -- Play the jumping animation
         self.jumpAnimation.paused = false
     end
@@ -331,7 +329,7 @@ function Player:handleFireInput()
     -- If the player has fired...
     if self.fireAnimation.frame >= 5 and self.fired == true then
         -- ... The player is now falling
-        playerState = PLAYER_STATES.falling
+        self.playerState = PLAYER_STATES.falling
         -- Set the fire animation back to frame one
         self.fireAnimation.frame = 1
         -- Reset the player image
@@ -371,13 +369,17 @@ function Player:handleJumpInput()
         -- Increase difficulty
         self.difficultyHUD:playerJumped()
         -- If the player was gliding they aren't anymore
-        self.wasGliding = false
+        if self.wasGliding then
+            self.wasGliding = false
+            -- Spawn a falling Albatross body
+            FireCharge(self.x, self.y, self.xVelocity, 9.8, 0, self, true)
+        end
     end
 
     -- If the player has jumped...
     if self.jumpAnimation.frame >= self.jumpAnimation.endFrame and self.jumped == true then
         -- ... The player is now falling
-        playerState = PLAYER_STATES.falling
+        self.playerState = PLAYER_STATES.falling
         -- Set the jump animation back to frame one
         self.jumpAnimation.frame = 1
         -- Reset the player image
@@ -412,8 +414,10 @@ function Player:handleGlideMovement()
     -- Once the player stops moving or spins awkwardly...
     else
         -- ... Return to falling
-        playerState = PLAYER_STATES.falling
+        self.playerState = PLAYER_STATES.falling
         self.wasGliding = false
+        -- Spawn a falling Albatross body
+        FireCharge(self.x, self.y, self.xVelocity, 9.8, 0, self, true)
     end
 end
 
@@ -479,7 +483,7 @@ function Player:screenShake(shakeTime, shakeMagnitude)
         local magnitude = math.floor(timer.value)
         local shakeX = math.random(-magnitude, magnitude)
         local shakeY = math.random(-magnitude, magnitude)
-        playdate.display.setOffset(shakeX, shakeY) 
+        playdate.display.setOffset(shakeX, shakeY)
     end
     -- Resetting the display offset at the end of the screen shake
     shakeTimer.timerEndedCallback = function()
