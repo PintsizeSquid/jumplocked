@@ -25,6 +25,7 @@ function Buoy:init(x, zHeight)
     self.timeAlive = 0
     self.waveFrequency = -.5
     self.waveRange = 10
+    self.soundPlayed = false
 
     -- Add this sprite to the display list
     self:add()
@@ -37,6 +38,16 @@ function Buoy:update()
     -- Get a rotation for the Buoy and increment it's time alive
     local rotation = math.cos(self.timeAlive / self.waveRange) * self.waveFrequency
     self.timeAlive += 1
+
+    -- Once the rotation starts to come back right and the sound hasn't played...
+    if self:getRotation() > 300 and self:getRotation() + rotation > self:getRotation() and self.soundPlayed == false then
+        -- Play Buoy sound
+        pulp.audio.playSound("Buoy")
+        self.soundPlayed = true
+    end
+    -- The sound is ready to play again after the Buoy rotates back and forth again
+    if self:getRotation() < 300 then self.soundPlayed = false end
+
     -- Set the Buoy's rotation
     self:setRotation(self:getRotation() + rotation)
 

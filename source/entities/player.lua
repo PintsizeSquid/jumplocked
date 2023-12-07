@@ -12,8 +12,6 @@ local PLAYER_STATES = {
     gliding = 3,
     falling = 4
 }
--- -- Start the player off falling
--- local playerState = PLAYER_STATES.falling
 
 -- Initialize Player object with coordinates x and y
 function Player:init(x, y)
@@ -83,7 +81,6 @@ function Player:init(x, y)
     self.waterOne = Water(2, 50, -1)
 
     -- Make sure the player is started in the right state
-    -- (Second time because it previously is only set the first time the player spawns)
     self.playerState = PLAYER_STATES.falling
 
     -- Add this sprite to the display list

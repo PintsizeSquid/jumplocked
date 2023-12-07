@@ -33,6 +33,11 @@ end
 function RechargeHUD:update()
     -- Set this sprite's image to the current animation frame
     self:setImage(self.rechargeHUDAnimation:image())
+    if self.playerObject.charges == 5 then
+        self.rechargeHUDAnimation.paused = true
+    else
+        self.rechargeHUDAnimation.paused = false
+    end
 end
 
 -- Unpause animation function

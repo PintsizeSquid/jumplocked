@@ -57,7 +57,7 @@ function GameScene:update()
     -- Grab the current draw offset
     local camX, _ = gfx.getDrawOffset()
     -- If the camera is almost near a 10,000 mark and a buoy hasn't spawned...
-    if (-math.floor(camX) + 500) % 10000 <= 10 and self.buoySpawned == false then
+    if (-math.floor(camX) + 500) % 10000 <= 100 and self.buoySpawned == false then
         -- ... Spawn a Buoy marker just ahead of the screen at the mark
         Buoy(-math.floor(camX) + 500, 96)
         self.lastBuoyX = -math.floor(camX) + 500
@@ -103,8 +103,58 @@ end
 
 -- Score display function
 function GameScene:displayScore()
+    -- Read in the user's highscore data
+    highscore = pd.datastore.read("highscore")
+
+    -- Make a table containing the player's current score
+    local scoreTable = {}
+    if highscore ~= nil then
+        for i=1,3 do
+            ins = 0
+            if highscore[i] ~= nil then ins = highscore[i] end
+            table.insert(scoreTable, ins)
+        end
+    end
+
+    local beatScore = false
+
+    -- Otherwise if the user has no highscore data...
+    if highscore == nil then
+        -- ... Update the user's highscore data
+        scoreTable = { self.player.score, 0, 0 }
+        pd.datastore.write(scoreTable, "highscore")
+        -- The user has beaten their highscore
+        beatScore = true
+    -- If the user has high score data...
+    else
+        -- ... Iterate over the top 3 scores looking for a score position
+        local scorePos = 0
+        for i=1,3 do
+            -- If the player has beaten a score...
+            if scoreTable[i] == nil or self.player.score > scoreTable[i] then
+                -- ... Mark the position and break out of the loop
+                scorePos = i
+                break
+            end
+        end
+        -- If a score was beaten...
+        if scorePos ~= 0 then
+            -- ... Insert the player's new score at that position
+            table.insert(scoreTable, scorePos, self.player.score)
+            -- Remove the now last (4th) place score
+            table.remove(scoreTable)
+        end
+
+        -- Update the user's highscore data
+        pd.datastore.write(scoreTable, "highscore")
+        -- If the scorePos was first, the player has beaten their highscore
+        if scorePos == 1 then beatScore = true end
+    end
+
     -- Create our score and game over texts
     local scoreText = " SCORE \n\n " .. tostring(self.player.score) .. " M"
+    -- If the user has beaten their high score, tell them in the scoreText
+    if beatScore == true then scoreText = scoreText .. "\n\n HIGH SCORE!" beatScore = false end
 
     -- Load and set our game's font
     local font = gfx.font.new("fonts/jumpFont")
