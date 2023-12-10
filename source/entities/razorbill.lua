@@ -124,7 +124,8 @@ function Razorbill:handleMovementAndCollisions()
                 collision.other.wasGliding = false
                 collision.other.playerState = PLAYER_STATES.falling
                 -- Spawn a falling Albatross body
-                FireCharge(collision.other.x, collision.other.y, collision.other.xVelocity, 9.8, 0, collision.other, true)
+                FireCharge(collision.other.x, collision.other.y,
+                    collision.other.xVelocity, 9.8, 0, collision.other, true)
             end
         end
      end

@@ -5,6 +5,14 @@ local gfx <const> = pd.graphics
 -- Extend Lightning sprite subclass 
 class('Lightning').extends(gfx.sprite)
 
+-- Player states
+local PLAYER_STATES = {
+    firing = 1,
+    jumping = 2,
+    gliding = 3,
+    falling = 4
+}
+
 -- Initialize Lightning object
 function Lightning:init(x, zHeight, player)
     -- Load the Lightning animation sprite sheet
@@ -67,6 +75,17 @@ function Lightning:handleCollisions()
             if collision.other.type == "player" then
                 -- ... Strike the player down
                 collision.other.yVelocity = self.impactForce
+                -- Play Hit sound
+                pulp.audio.playSound("Hit")
+                -- If the player is currently gliding...
+                if collision.other.wasGliding then
+                    -- ... The player is falling now
+                    collision.other.wasGliding = false
+                    collision.other.playerState = PLAYER_STATES.falling
+                    -- Spawn a falling Albatross body
+                    FireCharge(collision.other.x, collision.other.y,
+                        collision.other.xVelocity, 9.8 + self.impactForce, 0, collision.other, true)
+                end
             end
         end
     end
